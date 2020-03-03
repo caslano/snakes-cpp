@@ -14,6 +14,56 @@ const int N = 100;
 typedef Matrix<double, N + 1, N + 1> Matrix100;
 typedef Matrix<double, N + 1, 1> Vector100;
 
+void Print(const Vector100& V)
+{
+	int w = 8;
+	cout << fixed;
+	cout << setprecision(16);
+
+	cout << setw(w) << "#";
+	for (int j = 0; j < V.cols(); ++j)
+	{
+		cout << setw(w - 1) << j << ":";
+	}
+	cout << endl;
+
+	for (int i = 0; i < V.rows(); ++i)
+	{
+		cout << setw(w - 1) << i << ":";
+		for (int j = 0; j < V.cols(); ++j)
+		{
+			cout << setw(w) << V(i, j);
+		}
+		cout << endl;
+	}
+
+}
+
+void Print(const Matrix100& M)
+{
+	int w = 8;
+	cout << fixed;
+	cout << setprecision(4);
+
+	cout << setw(w) << "#";
+	for (int j = 0; j < M.cols(); ++j)
+	{
+		cout << setw(w - 1) << j << ":";
+	}
+	cout << endl;
+
+	for (int i = 0; i < M.rows(); ++i)
+	{
+		cout << setw(w - 1) << i << ":";
+		for (int j = 0; j < M.cols(); ++j)
+		{
+			cout << setw(w) << M(i, j);
+		}
+		cout << endl;
+	}
+
+}
+
 int main()
 {
 	
@@ -33,8 +83,6 @@ int main()
 				T(i, i+j) = 1.0 / 6;
 		}
 	}
-
-	T(N, N) = 1.0;
 
 	// You need to land on 100
 	for (int i = 1; i <= 5; i++)
@@ -88,10 +136,7 @@ int main()
 	V = Vector100::Constant(0.0);
 	V(0) = 1.0;
 
-	//cout << "T=\n" << T << endl;
 	//cout << "checkSum=\n" << checkSum << endl;
-	//cout << "V=\n" << V.transpose() << endl;
-
 	
 	clock_t t = clock();
 	double cumul_prob = 0.0;
@@ -100,11 +145,17 @@ int main()
 	vector<double> probas(1024, 0.0);
 	int counter = 0;
 
+#if _DEBUG
+	Print(T);
+#endif
+
 	while (cumul_prob < 0.999999999)
 	{
 		++counter;
 		V = V.transpose()*T;
-		cout << "V=\n" << V << endl;
+#if _DEBUG
+		Print(V);
+#endif
 		proba = V(N);
 		probas[counter] = proba;
 		cumul_prob += proba;
@@ -125,7 +176,7 @@ int main()
 
 	cout << "Counter = " << counter;
 	cout << " Timing = " << timing << "s";
-	cout << " Expectation = " << expectation << endl;
+	cout << " Expectation = " << setprecision(8) << expectation << endl;
 
 }
 
