@@ -34,35 +34,26 @@ int main()
 		}
 	}
 
-	//for[i1, i2] in trans :
-	//iw = np.where(T[:, i1] > 0)
-	//	T[:, i1] = 0
-	//	T[iw, i2] += 1 / 6
-
-	for (auto& pair : trans)
-	{
-		for (int i = 0; i <= N; ++i)
-		{
-			T(i, pair[0]) = 0.0;
-			if (T(i, pair[0]) > 0.0)
-			{
-				T(i, pair[1]) += 1.0 / 6;
-			}
-		}
-
-		if (pair[0] > pair[1])
-		{
-			T(pair[0], 100) = 0.0;
-		}
-
-	}
-
 	T(N, N) = 1.0;
 
 	// You need to land on 100
 	for (int i = 1; i <= 5; i++)
 	{
 		T(N - 6 + i, N - 6 + i) += (1.0 / 6 * i);
+	}
+
+
+	//Apply transitions
+	for (auto& jump : trans)
+	{
+		int source = jump[0];
+		int dest = jump[1];
+		for (int i = 0; i <= N; ++i)
+		{
+			double proba = T(i, source);
+			T(i, source) -= proba;
+			T(i, dest) += proba;
+		}
 	}
 
 	Vector100 checkSum = Vector100::Constant(0.0);
@@ -72,28 +63,69 @@ int main()
 		for (int j = 0; j < T.rows(); j++)
 			checkSum(i) += T(i, j);
 	}
+	/*
+	
+	# The player starts at position 0.
+	v = np.zeros(101)
+	v[0] = 1
 
+	n, P = 0, []
+	cumulative_prob = 0
+	expectation = 0
+	proba = 0
+	# Update the state vector v until the cumulative probability of winning
+	# is "effectively" 1
+	while cumulative_prob < 0.999999999:
+		n += 1
+		v = v.dot(T)
+		proba = v[100]
+		P.append(proba)
+		cumulative_prob += proba
+		expectation += proba * n
+
+	*/
 	
 	V = Vector100::Constant(0.0);
 	V(0) = 1.0;
 
-	cout << "T=\n" << T << endl;
-	//cout << "checkSum=\n" << checkSum.transpose() << endl;
+	//cout << "T=\n" << T << endl;
+	//cout << "checkSum=\n" << checkSum << endl;
 	//cout << "V=\n" << V.transpose() << endl;
 
 	
 	clock_t t = clock();
+	double cumul_prob = 0.0;
+	double expectation = 0.0;
+	double proba;
+	vector<double> probas(1024, 0.0);
+	int counter = 0;
 
-	for (int i = 0; i < 100; i++)
+	while (cumul_prob < 0.999999999)
 	{
-		T = T * T;
+		++counter;
+		V = V.transpose()*T;
+		cout << "V=\n" << V << endl;
+		proba = V(N);
+		probas[counter] = proba;
+		cumul_prob += proba;
+		expectation += proba * counter;
+
+		if (counter > 1E4)
+		{
+			cout << "counter overflow\n";
+			break;
+		}
 	}
 
 	t = clock() - t;
 
 
 	
-	printf("It took me %d clicks (%f seconds).\n", t, ((float)t) / CLOCKS_PER_SEC);
+	float timing = ((float)t) / CLOCKS_PER_SEC;
+
+	cout << "Counter = " << counter;
+	cout << " Timing = " << timing << "s";
+	cout << " Expectation = " << expectation << endl;
 
 }
 
