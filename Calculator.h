@@ -14,7 +14,7 @@ using namespace std;
 using namespace Eigen;
 
 const int N = 100;
-const long long BATCH_SIZE = 300;
+const long long BATCH_SIZE = 1000;
 typedef Matrix<double, N + 1, N + 1> Matrix100;
 typedef Matrix<double, N + 1, 1> Vector100;
 typedef map<int,int> Jumps;
@@ -25,7 +25,7 @@ private:
 	const int NUM_JUMPS;
 	const double TARGET;
 	const double TOLERANCE;
-	default_random_engine _generator;
+	random_device _generator;
 	uniform_int_distribution<int> _pos_distribution;
 	uniform_int_distribution<int> _ladderNumber_distribution;
 	uniform_int_distribution<int> _ladderSize_distribution;

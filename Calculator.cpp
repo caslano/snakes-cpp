@@ -303,11 +303,6 @@ Jumps Calculator::SearchJumps()
 			cout << " BestExp  = " << setw(16) << setprecision(12) << bestExp;
 			cout << endl;
 		}
-		if (error < 1E-3)
-		{
-			Print(jumps);
-			cout << endl;
-		}
 
 		counter++;
 
