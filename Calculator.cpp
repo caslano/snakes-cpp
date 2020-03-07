@@ -166,7 +166,7 @@ double Calculator::Expectation(const Jumps & jumps)
 		cumul_prob += proba;
 		expectation += proba * counter;
 
-		if (counter > 10000 || expectation > TARGET + TOLERANCE)
+		if (counter > 10000 || expectation > TARGET + 1E-2)
 			return 0.0;
 	}
 
