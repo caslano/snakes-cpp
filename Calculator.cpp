@@ -169,7 +169,7 @@ Expectation_t Calculator::Expectation(const Jumps & jumps, int precision)
 		cumul_prob += proba;
 		E.expectation += proba * E.counter;
 
-		if (E.counter > 20000 || E.expectation > TARGET + 1E-2)
+		if (E.counter > 20000 || E.expectation > TARGET + TOLERANCE)
 			return E;
 	}
 

@@ -9,7 +9,7 @@ int main()
 {
 	const int NUM_JUMPS = 10;
 	const double TARGET = 66.978705007555420778;
-	const double TOLERANCE = 1E-6;
+	const double TOLERANCE = 1E-7;
 	const int SEARCH_PRECISION = 7;
 
 	Calculator game(NUM_JUMPS, TARGET, TOLERANCE, SEARCH_PRECISION);
