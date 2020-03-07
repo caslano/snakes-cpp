@@ -99,7 +99,7 @@ void Calculator::Print(const Jumps& jumps)
 	cout << "  S=" << setw(3) << snakes;
 	cout << "  U=" << setw(3) << ups;
 	cout << "  D=" << setw(3) << downs;
-	cout << "  E=" << Expectation(jumps);
+	cout << "  E=" << setprecision(18) << Expectation(jumps);
 	
 
 	//cout << endl;
@@ -158,7 +158,7 @@ double Calculator::Expectation(const Jumps & jumps)
 	double proba;
 	int counter = 0;
 
-	while (cumul_prob < 0.999999999)
+	while (cumul_prob < 0.999999999999)
 	{
 		++counter;
 		V = V.transpose()*T;
@@ -166,7 +166,7 @@ double Calculator::Expectation(const Jumps & jumps)
 		cumul_prob += proba;
 		expectation += proba * counter;
 
-		if (counter > 10000 || expectation > TARGET + 1E-2)
+		if (counter > 20000 || expectation > TARGET + 1E-2)
 			return 0.0;
 	}
 

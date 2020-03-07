@@ -16,20 +16,20 @@ int main()
 	vector<Jumps> results;
 
 	clock_t start = clock();
-	
+
+
+	Jumps myBestJumps = map<int, int>{ {10,  39},{32,  61},{40,   3},{46,   9},{57,  86},{58,  21},{72,  35},{85,  48},{91,  54},{98,  59} };
+	cout << "My best jumps\n";
+	game.Print(myBestJumps);
+	cout << endl;
+
+	return 101;
 
 	try
 	{
 		Jumps jumps = game.SearchJumps();
 		results.push_back(jumps);
 		game.Print(jumps);
-
-		//for (int i = 0; i < 250; ++i)
-		//{
-		//	Jumps jumps = game.RandomJumps2();
-		//	game.Print(jumps);
-		//	cout << endl;
-		//}
 	}
 	catch(exception& ex)
 	{
@@ -44,6 +44,8 @@ int main()
 	
 	float timing = ((float)elapsed) / CLOCKS_PER_SEC;
 	cout << " Timing = " << timing << "s";
+
+	return 0;
 
 }
 
