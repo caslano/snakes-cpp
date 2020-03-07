@@ -42,24 +42,29 @@ void Print(const Vector100& V)
 void Print(const Matrix100& M)
 {
 	int w = 8;
-	cout << fixed;
-	cout << setprecision(4);
+	ostringstream line;
+	line << fixed;
+	line << setprecision(4);
 
-	cout << setw(w) << "#";
+	line << setw(w) << "#";
 	for (int j = 0; j < M.cols(); ++j)
 	{
-		cout << setw(w - 1) << j << ":";
+		line << setw(w - 1) << j << ":";
 	}
-	cout << endl;
+	cout << line.str() << endl;
+	line.str("");
+	line.clear();
 
 	for (int i = 0; i < M.rows(); ++i)
 	{
-		cout << setw(w - 1) << i << ":";
+		line << setw(w - 1) << i << ":";
 		for (int j = 0; j < M.cols(); ++j)
 		{
-			cout << setw(w) << M(i, j);
+			line << setw(w) << M(i, j);
 		}
-		cout << endl;
+		cout << line.str() << endl;
+		line.str("");
+		line.clear();
 	}
 
 }
@@ -67,12 +72,13 @@ void Print(const Matrix100& M)
 int main()
 {
 	
-	vector < vector<int>> trans = {{1, 38}, {4, 14}, {9, 31}, {21, 42}, {28, 84}, {36, 44}, {51, 67}, {71, 91}, {80, 100}, {16, 6}, {47, 26},
-		{49, 11}, {56, 53}, {62, 19}, {64, 60, }, {87, 24}, {93, 73}, {95, 75}, {98, 78}};
+	vector < vector<int>> trans = {{1, 38}, {4, 14}, {9, 31}, {21, 42}, {28, 84},
+	{36, 44}, {51, 67}, {71, 91}, {80, 100}, {16, 6}, {47, 26},
+	{49, 11}, {56, 53}, {62, 19}, {64, 60, }, {87, 24}, {93, 73}, {95, 75}, {98, 78}};
 
 	
 	Matrix100 T;	//The transition matrix
-	Vector100 V;
+	Vector100 V;	//The vector of transition
 
 	T = Matrix100::Constant(0.0);
 	for (int i = 0; i < T.rows(); i++)
@@ -105,57 +111,35 @@ int main()
 	}
 
 	Vector100 checkSum = Vector100::Constant(0.0);
-
 	for (int i = 0; i < T.rows(); i++)
 	{
 		for (int j = 0; j < T.rows(); j++)
 			checkSum(i) += T(i, j);
 	}
-	/*
 	
-	# The player starts at position 0.
-	v = np.zeros(101)
-	v[0] = 1
-
-	n, P = 0, []
-	cumulative_prob = 0
-	expectation = 0
-	proba = 0
-	# Update the state vector v until the cumulative probability of winning
-	# is "effectively" 1
-	while cumulative_prob < 0.999999999:
-		n += 1
-		v = v.dot(T)
-		proba = v[100]
-		P.append(proba)
-		cumulative_prob += proba
-		expectation += proba * n
-
-	*/
 	
 	V = Vector100::Constant(0.0);
 	V(0) = 1.0;
 
 	//cout << "checkSum=\n" << checkSum << endl;
 	
-	clock_t t = clock();
+	
 	double cumul_prob = 0.0;
 	double expectation = 0.0;
 	double proba;
 	vector<double> probas(1024, 0.0);
 	int counter = 0;
 
-#if _DEBUG
+//#if _DEBUG
 	Print(T);
-#endif
+//#endif
+
+	clock_t t = clock();
 
 	while (cumul_prob < 0.999999999)
 	{
 		++counter;
 		V = V.transpose()*T;
-#if _DEBUG
-		Print(V);
-#endif
 		proba = V(N);
 		probas[counter] = proba;
 		cumul_prob += proba;
