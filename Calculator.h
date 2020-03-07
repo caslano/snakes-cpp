@@ -24,7 +24,7 @@ class Calculator
 private:
 	const int NUM_JUMPS;
 	const double TARGET;
-	double _tolerance;
+	const double TOLERANCE;
 	default_random_engine _generator;
 	uniform_int_distribution<int> _pos_distribution;
 	uniform_int_distribution<int> _ladderNumber_distribution;
@@ -33,14 +33,14 @@ private:
 	
 	
 public:
-	Calculator(int numJumps, double target);
+	Calculator(int numJumps, double target, double tolerance);
 	void Print(const Vector100 & V);
 	void Print(const Matrix100 & M);
 	void Print(const Jumps & jumps);
 	double Expectation(const Jumps& jumps);
 	Jumps RandomJumps();
 	Jumps RandomJumps2();
-	Jumps SearchJumps(double tolerance);
+	Jumps SearchJumps();
 
 };
 
