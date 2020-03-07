@@ -10,8 +10,9 @@ int main()
 	const int NUM_JUMPS = 10;
 	const double TARGET = 66.978705007555420778;
 	const double TOLERANCE = 1E-6;
+	const int SEARCH_PRECISION = 7;
 
-	Calculator game(NUM_JUMPS, TARGET, TOLERANCE);
+	Calculator game(NUM_JUMPS, TARGET, TOLERANCE, SEARCH_PRECISION);
 	const int K = 1000;
 	vector<Jumps> results;
 
@@ -20,8 +21,11 @@ int main()
 
 	Jumps myBestJumps = map<int, int>{ {10,  39},{32,  61},{40,   3},{46,   9},{57,  86},{58,  21},{72,  35},{85,  48},{91,  54},{98,  59} };
 	cout << "My best jumps\n";
-	game.Print(myBestJumps);
-	cout << endl;
+	for (int precision = 1; precision <= 18; ++precision)
+	{
+		game.Print(myBestJumps, precision);
+		cout << endl;
+	}
 
 	return 101;
 
@@ -29,7 +33,7 @@ int main()
 	{
 		Jumps jumps = game.SearchJumps();
 		results.push_back(jumps);
-		game.Print(jumps);
+		game.Print(jumps, SEARCH_PRECISION);
 	}
 	catch(exception& ex)
 	{

@@ -3,8 +3,8 @@
 
 using namespace std;
 
-Calculator::Calculator(int numJumps, double target, double tolerance)
-	: NUM_JUMPS(numJumps), TARGET(target), TOLERANCE(tolerance)
+Calculator::Calculator(int numJumps, double target, double tolerance, int precision)
+	: NUM_JUMPS(numJumps), TARGET(target), TOLERANCE(tolerance), SEARCH_PRECISION(precision)
 {
 	_pos_distribution = uniform_int_distribution<int>(1, 100);
 	_ladderNumber_distribution = uniform_int_distribution<int>(3, 4);
@@ -67,7 +67,7 @@ void Calculator::Print(const Matrix100& M)
 
 }
 
-void Calculator::Print(const Jumps& jumps)
+void Calculator::Print(const Jumps& jumps, int print_precision)
 {
 	int downs = 0;
 	int ups = 0;
@@ -99,13 +99,13 @@ void Calculator::Print(const Jumps& jumps)
 	cout << "  S=" << setw(3) << snakes;
 	cout << "  U=" << setw(3) << ups;
 	cout << "  D=" << setw(3) << downs;
-	cout << "  E=" << setprecision(18) << Expectation(jumps);
+	cout << "  E=" << setprecision(18) << Expectation(jumps, print_precision);
 	
 
 	//cout << endl;
 }
 
-double Calculator::Expectation(const Jumps & jumps)
+Expectation_t Calculator::Expectation(const Jumps & jumps, int precision)
 {
 	Matrix100 T;	//The transition matrix
 	Vector100 V;	//The vector of transition
@@ -154,23 +154,26 @@ double Calculator::Expectation(const Jumps & jumps)
 	V(0) = 1.0;
 
 	double cumul_prob = 0.0;
-	double expectation = 0.0;
+	Expectation_t E;
+	E.precision = precision;
 	double proba;
-	int counter = 0;
 
-	while (cumul_prob < 0.999999999999)
+
+	const double LIMIT = 1.0 - pow(10, -precision);
+
+	while (cumul_prob < LIMIT)
 	{
-		++counter;
+		++E.counter;
 		V = V.transpose()*T;
 		proba = V(N);
 		cumul_prob += proba;
-		expectation += proba * counter;
+		E.expectation += proba * E.counter;
 
-		if (counter > 20000 || expectation > TARGET + 1E-2)
-			return 0.0;
+		if (E.counter > 20000 || E.expectation > TARGET + 1E-2)
+			return E;
 	}
 
-	return expectation;
+	return E;
 
 
 }
@@ -275,7 +278,7 @@ Jumps Calculator::SearchJumps()
 	
 
 	long long counter = 0;
-	double exp;
+	Expectation_t exp;
 	Jumps jumps;
 	double bestExp = 0.0;
 	double bestError = 100.0;
@@ -284,13 +287,13 @@ Jumps Calculator::SearchJumps()
 	do
 	{
 		jumps = RandomJumps2();
-		exp = Expectation(jumps);
+		exp = Expectation(jumps, SEARCH_PRECISION);
 		
-		error = abs(exp - TARGET);
+		error = abs(exp.expectation - TARGET);
 
 		if (error < bestError)
 		{
-			bestExp = exp;
+			bestExp = exp.expectation;
 			bestError = error;
 			bestJumps = jumps;
 		}
@@ -311,3 +314,15 @@ Jumps Calculator::SearchJumps()
 	return jumps;
 }
 
+ostream & operator<<(ostream & out, Expectation_t e)
+{
+	out << "Count=" << e.counter;
+	out << " Precision=" << e.precision;
+	out << " Exp=" << setprecision(17) << e.expectation;
+	return out;
+}
+
+Expectation_t::Expectation_t()
+	:expectation(0.0), counter(0), precision(0)
+{
+}

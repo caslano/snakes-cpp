@@ -19,11 +19,22 @@ typedef Matrix<double, N + 1, N + 1> Matrix100;
 typedef Matrix<double, N + 1, 1> Vector100;
 typedef map<int,int> Jumps;
 
+struct Expectation_t
+{
+	double expectation;
+	int counter;
+	int precision;
+	Expectation_t();
+};
+
+ostream& operator <<(ostream& out, Expectation_t e);
+
 class Calculator
 {
 private:
 	const int NUM_JUMPS;
 	const double TARGET;
+	const int SEARCH_PRECISION;
 	const double TOLERANCE;
 	random_device _generator;
 	uniform_int_distribution<int> _pos_distribution;
@@ -33,11 +44,11 @@ private:
 	
 	
 public:
-	Calculator(int numJumps, double target, double tolerance);
+	Calculator(int numJumps, double target, double tolerance, int precision);
 	void Print(const Vector100 & V);
 	void Print(const Matrix100 & M);
-	void Print(const Jumps & jumps);
-	double Expectation(const Jumps& jumps);
+	void Print(const Jumps & jumps, int print_precision);
+	Expectation_t Expectation(const Jumps& jumps, int precision);
 	Jumps RandomJumps();
 	Jumps RandomJumps2();
 	Jumps SearchJumps();
