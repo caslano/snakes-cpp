@@ -22,6 +22,7 @@ typedef map<int,int> Jumps;
 struct Expectation_t
 {
 	double expectation;
+	double error;
 	int counter;
 	int precision;
 	Expectation_t();
@@ -35,23 +36,27 @@ private:
 	const int NUM_JUMPS;
 	const double TARGET;
 	const int SEARCH_PRECISION;
+	const int FULL_PRECISION;
 	const double TOLERANCE;
+	const double SEARCH_PRECISION_LIMIT;
+	const double FULL_PRECISION_LIMIT;
 	random_device _generator;
 	uniform_int_distribution<int> _pos_distribution;
 	uniform_int_distribution<int> _ladderNumber_distribution;
 	uniform_int_distribution<int> _ladderSize_distribution;
 	uniform_int_distribution<int> _snakeSize_distribution;
-	
+public:
+	string LogFilename;
 	
 public:
-	Calculator(int numJumps, double target, double tolerance, int precision);
+	Calculator(int numJumps, double target, double tolerance, int searchPrecision, int fullPrecision);
 	void Print(const Vector100 & V);
 	void Print(const Matrix100 & M);
-	void Print(const Jumps & jumps, int print_precision);
-	Expectation_t Expectation(const Jumps& jumps, int precision);
+	void Print(const Jumps & jumps, bool isFullPrecision);
+	Expectation_t Expectation(const Jumps& jumps, bool isFullPrecision);
 	Jumps RandomJumps();
 	Jumps RandomJumps2();
-	Jumps SearchJumps();
+	Jumps SearchJumps(int maxCounter=0);
 
 };
 

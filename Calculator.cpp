@@ -3,13 +3,20 @@
 
 using namespace std;
 
-Calculator::Calculator(int numJumps, double target, double tolerance, int precision)
-	: NUM_JUMPS(numJumps), TARGET(target), TOLERANCE(tolerance), SEARCH_PRECISION(precision)
+Calculator::Calculator(int numJumps, double target, double tolerance, int searchPrecision, int fullPrecision)
+	: NUM_JUMPS(numJumps), 
+	TARGET(target), 
+	TOLERANCE(tolerance), 
+	SEARCH_PRECISION(searchPrecision), 
+	FULL_PRECISION(fullPrecision),
+	SEARCH_PRECISION_LIMIT(1.0 - pow(10, -searchPrecision)),
+	FULL_PRECISION_LIMIT(1.0 - pow(10, -fullPrecision))
 {
 	_pos_distribution = uniform_int_distribution<int>(1, 100);
 	_ladderNumber_distribution = uniform_int_distribution<int>(3, 4);
-	_ladderSize_distribution = uniform_int_distribution<int>(80, 120);
-	_snakeSize_distribution = uniform_int_distribution<int>(200, 300);
+	_ladderSize_distribution = uniform_int_distribution<int>(80, 90);
+	_snakeSize_distribution = uniform_int_distribution<int>(220, 262);
+	LogFilename = R"(C:\temp\SnakesLadder.log)";
 }
 
 void Calculator::Print(const Vector100& V)
@@ -67,7 +74,7 @@ void Calculator::Print(const Matrix100& M)
 
 }
 
-void Calculator::Print(const Jumps& jumps, int print_precision)
+void Calculator::Print(const Jumps& jumps, bool isFullPrecision)
 {
 	int downs = 0;
 	int ups = 0;
@@ -95,17 +102,15 @@ void Calculator::Print(const Jumps& jumps, int print_precision)
 		}
 	}
 
-	cout << "  L=" << setw(3) << ladders;
-	cout << "  S=" << setw(3) << snakes;
+	cout << "  L=" << setw(1) << ladders;
+	cout << "  S=" << setw(1) << snakes;
 	cout << "  U=" << setw(3) << ups;
-	cout << "  D=" << setw(3) << downs;
-	cout << "  E=" << setprecision(18) << Expectation(jumps, print_precision);
-	
-
-	//cout << endl;
+	cout << "  D=" << setw(4) << downs;
+	cout << Expectation(jumps, isFullPrecision);
+	cout << endl;
 }
 
-Expectation_t Calculator::Expectation(const Jumps & jumps, int precision)
+Expectation_t Calculator::Expectation(const Jumps & jumps, bool isFullPrecision)
 {
 	Matrix100 T;	//The transition matrix
 	Vector100 V;	//The vector of transition
@@ -155,11 +160,10 @@ Expectation_t Calculator::Expectation(const Jumps & jumps, int precision)
 
 	double cumul_prob = 0.0;
 	Expectation_t E;
-	E.precision = precision;
+	E.precision = (isFullPrecision) ? FULL_PRECISION : SEARCH_PRECISION;
 	double proba;
-
-
-	const double LIMIT = 1.0 - pow(10, -precision);
+	
+	const double LIMIT = (isFullPrecision) ? FULL_PRECISION_LIMIT : SEARCH_PRECISION_LIMIT;
 
 	while (cumul_prob < LIMIT)
 	{
@@ -170,8 +174,13 @@ Expectation_t Calculator::Expectation(const Jumps & jumps, int precision)
 		E.expectation += proba * E.counter;
 
 		if (E.counter > 20000 || E.expectation > TARGET + TOLERANCE)
+		{
+			E.error = E.expectation - TARGET;
 			return E;
+		}
 	}
+	
+	E.error = E.expectation - TARGET;
 
 	return E;
 
@@ -271,54 +280,63 @@ Jumps Calculator::RandomJumps2()
 	return jumps;
 }
 
-Jumps Calculator::SearchJumps()
+Jumps Calculator::SearchJumps(int maxCounter)
 {
-	
-
-	
-
 	long long counter = 0;
-	Expectation_t exp;
+	Expectation_t E;
 	Jumps jumps;
 	double bestExp = 0.0;
-	double bestError = 100.0;
-	double error = 0.0;
+	double bestAbsError = 100.0;
+	double bestError = 0;
+	double absError = 0.0;
 	Jumps bestJumps;
+	const double LOWER_TOLERANCE = -TOLERANCE * 3;
 	do
 	{
 		jumps = RandomJumps2();
-		exp = Expectation(jumps, SEARCH_PRECISION);
+		E = Expectation(jumps, false);
 		
-		error = abs(exp.expectation - TARGET);
+		absError = abs(E.error);
 
-		if (error < bestError)
+		if (absError < bestAbsError)
 		{
-			bestExp = exp.expectation;
-			bestError = error;
+			bestExp = E.expectation;
+			bestAbsError = absError;
+			bestError = E.error;
 			bestJumps = jumps;
 		}
 
 		if (counter % BATCH_SIZE == 0)
 		{
-			cout << "Counter = " << setw(16) << counter;
-			cout << " LastExp  = " << setw(16) << setprecision(12) << exp;
-			cout << " BestErr = " << setw(10) << bestError;
-			cout << " BestExp  = " << setw(16) << setprecision(12) << bestExp;
+			cout << "Counter=" << setw(8) << counter;
+			cout << E;
+			cout << " BestErr=" << defaultfloat << setw(8) << setprecision(3) << bestError;
+			cout << " BestExp=" << setw(16) << setprecision(12) << bestExp;
 			cout << endl;
 		}
 
 		counter++;
 
-	} while (error > TOLERANCE);
+		if (counter != 0 && counter > maxCounter)
+			break;
+
+	} while (absError < LOWER_TOLERANCE || absError > TOLERANCE);
 	
+	if (counter > maxCounter)
+	{
+		jumps = bestJumps;
+		cout << "MaxCounter reached\n";
+	}
+
 	return jumps;
 }
 
 ostream & operator<<(ostream & out, Expectation_t e)
 {
-	out << "Count=" << e.counter;
-	out << " Precision=" << e.precision;
-	out << " Exp=" << setprecision(17) << e.expectation;
+	out << " Count=" << setw(4) << e.counter;
+	out << " Precision=" << setw(2) << e.precision;
+	out << " Err=" << defaultfloat << setprecision(3) << setw(8) << e.error;
+	out << " Exp=" << setw(13) << setprecision(10) << e.expectation;
 	return out;
 }
 
